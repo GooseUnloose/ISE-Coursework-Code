@@ -217,10 +217,10 @@ def check2Phase(inp):
 def logTest(id,model,phase,freq,accuracy,precision,recall,f1_score,aucValues,processTime):
     
     if phase == False:
-        out_csv_name = f'../Results/1Phase_{id}_{model}'
+        out_csv_name = f'Results/1Phase_{id}_{model}'
         
     else:
-        out_csv_name = f'../Results/2Phase_{id}_{model}'
+        out_csv_name = f'Results/2Phase_{id}_{model}'
         
     try:
     # Attempt to check if the file already has a header
@@ -286,7 +286,7 @@ def dfCycle():
         datasets={'caffe','incubator-mxnet','keras','pytorch','tensorflow'}
         for i in datasets:
             print(f"\n\n{i}\n")
-            df = pd.read_csv(f"../Datasets/{i}.csv").fillna("")
+            df = pd.read_csv(f"Datasets/{i}.csv").fillna("")
             df = dfReduction(df)
             df['Body'] = df.apply(lambda row: row['Title'] + '. ' + row['Body'] if pd.notna(row['Body']) else row['Title'],axis=1)
             df = df.drop('Title',axis='columns')
