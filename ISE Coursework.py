@@ -6,7 +6,6 @@
 
 ## imports random and establishes a seed for this randomisation
 import random
-
 import time
 import pandas as pd
 import numpy as np
@@ -316,13 +315,14 @@ def dfCycle():
                         df['Body'] = df['Body'].apply(Stemming)
                         train(i,p1,df,trainSeeds,parameters[j],models[j])
                     else:
+                        print("1-Phase test")
                         p1 = None
                         df = runPhase1(df,p1)
                         df['Body'] = df['Body'].apply(Stemming)
                         train(i,p1,df,trainSeeds,parameters[j],models[j])
             else:
                 ##To perform standard, non 2-phase approach make p1 = None, the trainPhase1 function has a condition for handling none values
-                print("1-Phase test")
+                print("Baseline test")
                 p1 = None
                 df = runPhase1(df,p1)
                 df['Body'] = df['Body'].apply(Stemming)
