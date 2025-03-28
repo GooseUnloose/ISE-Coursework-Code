@@ -2,7 +2,8 @@ import pandas as pd
 import numpy as np
 from scipy import stats
 
-
+#This test will check only the Results folder to retrieve data. Thus, if you want to run this program, ensure you have ran the ISE_Coursework beforehand
+#DO NOT run the program more than once, or else it will append test data to the already created CSV files, which will cause this program to not work!
 
 datasets={'caffe','incubator-mxnet','keras','pytorch','tensorflow'}
 
