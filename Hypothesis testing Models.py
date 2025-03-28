@@ -8,8 +8,8 @@ datasets={'caffe','incubator-mxnet','keras','pytorch','tensorflow'}
 
 for i in datasets:
 
-    df1 = pd.read_csv(f'C:/Users/Goose/Desktop/Results/1Phase_{i}_GaussianNB_RAWDATA.csv').fillna("")
-    df2 = pd.read_csv(f'C:/Users/Goose/Desktop/Results/1Phase_{i}_MultinomialNB_RAWDATA.csv').fillna("")
+    df1 = pd.read_csv(f'Results/1Phase_{i}_GaussianNB_RAWDATA.csv').fillna("")
+    df2 = pd.read_csv(f'Results/1Phase_{i}_MultinomialNB_RAWDATA.csv').fillna("")
 
     cols = df1.columns
     reject = True
