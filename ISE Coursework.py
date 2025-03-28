@@ -6,6 +6,7 @@
 
 ## imports random and establishes a seed for this randomisation
 import random
+
 import time
 import pandas as pd
 import numpy as np
@@ -43,7 +44,7 @@ def genSeeds(inputList):
 
 #preprocess cleaning of datasets, removing irreleveant & metadata columns
 def dfReduction(inpCSV):
-    #this function anticipates a particular formatting of fields,
+    #this function anticipates a particular formatting of fields, and abreviates them into three columns, Title, Body and Target which will be where classifications are stored
     #it could be extended using some logic to normalise any given dataset into our frame standard
     newDf = pd.DataFrame().assign(id=inpCSV['Unnamed: 0'],Title=inpCSV['Title'],Body=inpCSV['Body'],Target=inpCSV['class'])
     
@@ -56,39 +57,41 @@ def phase1Reduction(inpCSV):
     return newDf
 
 #extra preprocessing methods
+
+#removes any html specific characters within text
 def removeHTML(inpCSV):
     #As datasets have been standardised we can reference the column directly
     htmlSub = re.compile(r'<.*?>')
     inpCSV = htmlSub.sub(r'',inpCSV)
     return inpCSV
 
-
+#removes stop words from dataset
 nltk.download('stopwords')
 def removeStopwords(inpCSV):
     stopwordsList = stopwords.words('english')
-    customWords = []
-    totalWords = stopwordsList + customWords
     for i in inpCSV.split():
-        if i in totalWords:
+        if i in stopwordsList:
             i = " "
     return inpCSV
     
 def removeEmotes(inpCSV):
     emoteSub = re.compile("["
-                               u"\U0001F600-\U0001F64F"  # emoticons
-                               u"\U0001F300-\U0001F5FF"  # symbols & pictographs
-                               u"\U0001F680-\U0001F6FF"  # transport & map symbols
-                               u"\U0001F1E0-\U0001F1FF"  # flags
+                               u"\U0001F600-\U0001F64F"  # removes emote characters
+                               u"\U0001F300-\U0001F5FF"  # removes symbols
+                               u"\U0001F680-\U0001F6FF"  # removes geographic characters
+                               u"\U0001F1E0-\U0001F1FF"  # removes flags 
                                u"\U00002702-\U000027B0"
-                               u"\U000024C2-\U0001F251"  # enclosed characters
+                               u"\U000024C2-\U0001F251"  # removes enclosed characters
                                "]+", flags=re.UNICODE)
     inpCSV = emoteSub.sub(r'',inpCSV)
     return inpCSV
 
+#removes all punctuation and non alpha charcters from a text
 def bodyCleaner(inpCSV):  
     inpCSV = re.sub("[^a-zA-Z ]+","",inpCSV)  
     return inpCSV.strip().lower()
 
+#reduces all words to core or root forms
 def Stemming(inpCSV):
     for i in inpCSV:
         PorterStemmer().stem(i)
@@ -108,6 +111,7 @@ def subsetCSV(inpCSV):
     #return reduced training dataset for phase 1, this is to prevent model overfitting
     return inpCSV
 
+#traning function for the first phase of the 2 phase solution
 def trainPhase1(trainCSV):
     
     trainCSV = qualityAssess(trainCSV)
@@ -133,7 +137,8 @@ def trainPhase1(trainCSV):
 
 def runPhase1(inpCSV,model):
     #predicts utility of bug reports, then returns a subset of the original dataset where all elements are classified as useful
-    
+
+    #if there is no trained 1 phase model, the function returns an unmodified DF
     if model == None:
         return inpCSV
     else:
@@ -150,6 +155,7 @@ def runPhase1(inpCSV,model):
         print(originalCSV.shape)
         return originalCSV
 
+#main function for training the performance classification models
 def train(id,phase,inpCSV,seeds,param,model):
     
     accuracies  = []
@@ -207,6 +213,7 @@ def train(id,phase,inpCSV,seeds,param,model):
     
     logTest(id,clfName,check2Phase(phase),len(seeds),accuracies,precisions,recalls,f1_scores,aucValues,processTimes)        
 
+#small function for checking if the test is 2 phase or not
 def check2Phase(inp):
     if inp != None:
         return True
@@ -214,6 +221,7 @@ def check2Phase(inp):
     else:
         return False
 
+#writes results of tests to an external CSV file, one for mean values, the other for Raw values for each test seed. Naming the file appropriately 
 def logTest(id,model,phase,freq,accuracy,precision,recall,f1_score,aucValues,processTime):
     
     if phase == False:
@@ -296,15 +304,13 @@ def dfCycle():
             df['Body'] = df['Body'].apply(bodyCleaner)
         
 
-            df1 = pd.read_csv(f"C:/Users/Goose/Downloads/{i}.csv").fillna("")
-        
-            ##To perform standard, non 2-phase approach make p1 = None, the trainPhase1 function has a condition for handling none values
-            p1 = None
-            df = runPhase1(df,p1)
-        
+            df1 = pd.read_csv(f"Datasets/{i}.csv").fillna("")
+
+            #determins if the multinomial model is being run currently, will then perform both 1 and 2 phase testing
             if type(models[j]).__name__ == "MultinomialNB":
                 for k in range(0,2):
                     if k == 0:
+                        print("2-Phase test")
                         p1 = trainPhase1(df1)
                         df = runPhase1(df,p1)
                         df['Body'] = df['Body'].apply(Stemming)
@@ -315,6 +321,10 @@ def dfCycle():
                         df['Body'] = df['Body'].apply(Stemming)
                         train(i,p1,df,trainSeeds,parameters[j],models[j])
             else:
+                ##To perform standard, non 2-phase approach make p1 = None, the trainPhase1 function has a condition for handling none values
+                print("1-Phase test")
+                p1 = None
+                df = runPhase1(df,p1)
                 df['Body'] = df['Body'].apply(Stemming)
                 train(i,p1,df,trainSeeds,parameters[j],models[j])
 
@@ -326,6 +336,3 @@ trainSeeds = []
 genSeeds(trainSeeds)
 
 dfCycle()
-#print(trainSeeds)
-
-
